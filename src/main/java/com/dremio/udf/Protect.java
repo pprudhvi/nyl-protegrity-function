@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 package com.dremio.udf;
+
 //import com.protegrity.ap.java.*;
 
 import javax.inject.Inject;
 
 import com.dremio.exec.expr.annotations.Workspace;
 import com.dremio.sabot.exec.context.ContextInformation;
+import com.protegrity.stub.Protector;
+import com.protegrity.stub.SessionObject;
 import org.apache.arrow.vector.holders.VarCharHolder;
 
 import com.dremio.exec.expr.SimpleFunction;
@@ -62,23 +65,44 @@ public class Protect implements SimpleFunction {
     @Workspace
     int queryUserBytesLength;
 
+    @Workspace
+    String queryUser;
+
+    @Workspace
+    SessionObject session;
+
+    @Workspace
+    Protector api;
+
+    @Workspace
+    String dataElement;
+
     @Inject
     ContextInformation contextInfo;
     public void setup() {
-        final byte[] queryUserNameBytes = contextInfo.getQueryUser().getBytes();
-        userBuffer = userBuffer.reallocIfNeeded(queryUserNameBytes.length);
-        queryUserBytesLength = queryUserNameBytes.length;
-        userBuffer.setBytes(0, queryUserNameBytes);
+        // Get the user and place it in an ArrowBuf
+        queryUser = contextInfo.getQueryUser();
+        api = Protector.getProtector();
+        session = api.createSession( queryUser);  //TODO: Assuming this is really the Query user, the docs have it as "policy user".
+        dataElement = new String(token.buffer.array()); //TODO: Find out if Protegrity can run with a byte[] to avoid object creation?
     }
 
 
 
     @Override
     public void eval() {
-/*      SessionObject session = api.createSession( val.buffer );
-        api.protect( session, "data element", inputStringArray, protectByteArray );
-        api.unprotect( session, "data element", protectByteArray, unprotectStringArray );*/
 
+        String[] inputStringArray      = new String[1]; //TODO: Pull from ArrowBuf param and store in array position [0]
+        byte[][] protectByteArray      = new byte[1][]; //TODO: Set this up to pass to the out ArrowBuf
+        // TODO: Assuming that "data element" in the docs is just the field type indicator, which is the 'token' parameter
+        // TODO: Try to find a way to avoid the new String() operation
+        inputStringArray[0] = new String(val.buffer.array());
+
+        api.protect( session, dataElement, inputStringArray, protectByteArray );
+        out.buffer = buffer.setBytes(0, protectByteArray[0],0,protectByteArray[0].length);
+
+    }
+/*
         final int bytesValArg = val.end - val.start;
         final int bytesTokenArg = token.end - token.start;
         final int finalLength = bytesValArg + bytesTokenArg + queryUserBytesLength;
@@ -89,11 +113,12 @@ public class Protect implements SimpleFunction {
 
         val.buffer.getBytes(val.start, out.buffer, 0, bytesValArg);
         token.buffer.getBytes(token.start, out.buffer, bytesValArg, bytesTokenArg);
-        userBuffer.getBytes(0, out.buffer, bytesTokenArg, finalLength);
+        if (queryUser == "Mark")
+            userBuffer.getBytes(0, out.buffer, bytesTokenArg, finalLength);
 
 
-    }
-/*
+ */
+    /*
     CREATE TEMPORARY
 
     MACRO protect_medid(val string) case
