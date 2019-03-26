@@ -4,8 +4,7 @@
 
 This shows an example a custom function using Dremio's internal APIs. 
 
-## Calling Custom Functions
-* The function name to 
+
 ## Sample Functions
 There are 3 examples in this repository, 'addstuff', 'concat' and 'protect' which are described in the following sections.
 
