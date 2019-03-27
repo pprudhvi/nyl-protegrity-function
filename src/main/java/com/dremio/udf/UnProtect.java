@@ -13,41 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.dremio.udf;
+package dremio.udf;
 
 //import com.protegrity.ap.java.*;
-
-import javax.inject.Inject;
-
-import com.dremio.exec.expr.annotations.Workspace;
-import com.dremio.exec.record.VectorAccessibleComplexWriter;
-import com.dremio.exec.record.VectorContainer;
-import com.dremio.sabot.exec.context.BufferManagerImpl;
-import com.dremio.sabot.exec.context.ContextInformation;
-import com.protegrity.stub.Protector;
-import com.protegrity.stub.SessionObject;
-import org.apache.arrow.memory.BufferAllocator;
-import org.apache.arrow.memory.BufferManager;
-import org.apache.arrow.vector.holders.VarCharHolder;
 
 import com.dremio.exec.expr.SimpleFunction;
 import com.dremio.exec.expr.annotations.FunctionTemplate;
 import com.dremio.exec.expr.annotations.FunctionTemplate.NullHandling;
 import com.dremio.exec.expr.annotations.Output;
 import com.dremio.exec.expr.annotations.Param;
-
+import com.dremio.exec.expr.annotations.Workspace;
+import com.dremio.sabot.exec.context.ContextInformation;
+import com.protegrity.stub.Protector;
+import com.protegrity.stub.SessionObject;
 import io.netty.buffer.ArrowBuf;
+import org.apache.arrow.vector.holders.VarCharHolder;
 
-import java.nio.charset.Charset;
+import javax.inject.Inject;
 
-import static jdk.nashorn.internal.objects.Global.print;
-// Dremio Function: protect("<Column Name with unencrypted values>","{Token})
+// Dremio Function: unprotect("<Column Name with encrypted values>","{Token})
 @FunctionTemplate(
-        name = "protect",
+        name = "unprotect",
         scope = FunctionTemplate.FunctionScope.SIMPLE,
-        nulls = FunctionTemplate.NullHandling.NULL_IF_NULL,
+        nulls = NullHandling.NULL_IF_NULL,
         isDynamic = true)
-public class Protect implements SimpleFunction {
+public class UnProtect implements SimpleFunction {
 
     @Inject
     ArrowBuf buffer;
@@ -89,14 +79,14 @@ public class Protect implements SimpleFunction {
 
     @Override
     public void eval() {
-        String[] inputStringArray      = new String[1];
+        String[] unprotectStringArray      = new String[1];
         byte[][] protectByteArray      = new byte[1][];
 
 
         byte[] valBytes = new byte[val.end];
         val.buffer.getBytes(0,valBytes,0, val.end);
-        inputStringArray[0] = new String(valBytes);
-        api.protect( session, field_token, inputStringArray, protectByteArray );
+        protectByteArray[0] = new String(valBytes);
+        api.unprotect( session, field_token, protectByteArray, unprotectStringArray );
         out.buffer = buffer = buffer.reallocIfNeeded(protectByteArray[0].length);
         out.buffer = buffer.setBytes(0, protectByteArray[0],0,protectByteArray[0].length);
     }

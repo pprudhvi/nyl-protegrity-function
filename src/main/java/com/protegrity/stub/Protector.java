@@ -5,12 +5,12 @@ public class Protector {
         return new Protector();
     }
 
-    public SessionObject createSession(String queryUser) {
-        return new SessionObject(queryUser);
+    public com.protegrity.stub.SessionObject createSession(String queryUser) {
+        return new com.protegrity.stub.SessionObject(queryUser);
 
     }
 
-    public void protect(SessionObject session, String dataElement, String[] inputStringArray, byte[][] protectByteArray ) {
+    public void protect(com.protegrity.stub.SessionObject session, String dataElement, String[] inputStringArray, byte[][] protectByteArray ) {
         System.out.println("XXX Protect User = "+session.queryUser);
         System.out.println("DataElement = "+dataElement);
         System.out.println("Source value="+inputStringArray[0]);
