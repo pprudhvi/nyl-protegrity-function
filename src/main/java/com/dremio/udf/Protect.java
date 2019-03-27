@@ -79,7 +79,7 @@ public class Protect implements SimpleFunction {
     public void setup() {
         queryUser = contextInfo.getQueryUser();
         api = Protector.getProtector();
-        session = api.createSession( queryUser);  //TODO: Assuming this is really the Query user, the docs have it as "policy user".
+        session = api.createSession( queryUser);
         byte[] tokBytes = new byte[token.end];
         token.buffer.getBytes(0,tokBytes,0, token.end);
         field_token = new String(tokBytes);
@@ -91,7 +91,7 @@ public class Protect implements SimpleFunction {
     public void eval() {
         String[] inputStringArray      = new String[1];
         byte[][] protectByteArray      = new byte[1][];
-        // TODO: Assuming that "data element" in the docs is just the field type indicator, which is the 'token' parameter
+
 
         byte[] valBytes = new byte[val.end];
         val.buffer.getBytes(0,valBytes,0, val.end);
