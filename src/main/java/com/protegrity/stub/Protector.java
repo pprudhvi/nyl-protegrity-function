@@ -20,4 +20,11 @@ public class Protector {
 
 
     }
+
+    public void unprotect(com.protegrity.stub.SessionObject session, String dataElement, byte[][] protectByteArray , String[] inputStringArray) {
+        System.out.println("XXX Protect User = "+session.queryUser);
+        System.out.println("DataElement = "+dataElement);
+        System.out.println("Source value="+inputStringArray[0]);
+        protectByteArray[0] = new byte[inputStringArray[0].length()+4];
+    }
 }
