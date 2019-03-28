@@ -85,7 +85,7 @@ public class UnProtect implements SimpleFunction {
 
         byte[] valBytes = new byte[val.end];
         val.buffer.getBytes(0,valBytes,0, val.end);
-        protectByteArray[0] = new String(valBytes);
+        protectByteArray[0] = new String(valBytes).getBytes();
         api.unprotect( session, field_token, protectByteArray, unprotectStringArray );
         out.buffer = buffer = buffer.reallocIfNeeded(protectByteArray[0].length);
         out.buffer = buffer.setBytes(0, protectByteArray[0],0,protectByteArray[0].length);
