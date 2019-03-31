@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dremio.udf;
+package com.dremio.udf;
 
 //import com.protegrity.ap.java.*;
 
