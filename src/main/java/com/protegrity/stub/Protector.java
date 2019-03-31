@@ -1,5 +1,6 @@
 package com.protegrity.stub;
 
+
 public class Protector {
     public static Protector getProtector() {
         return new Protector();

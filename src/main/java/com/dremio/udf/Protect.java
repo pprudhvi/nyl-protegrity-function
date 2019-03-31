@@ -1,4 +1,4 @@
-/*
+package dremio.udf;/*
  * Copyright (C) 2017-2018 Dremio Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,34 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.dremio.udf;
+
 
 //import com.protegrity.ap.java.*;
 
-import javax.inject.Inject;
-
+import com.dremio.exec.expr.SimpleFunction;
+import com.dremio.exec.expr.annotations.FunctionTemplate;
+import com.dremio.exec.expr.annotations.Output;
+import com.dremio.exec.expr.annotations.Param;
 import com.dremio.exec.expr.annotations.Workspace;
-import com.dremio.exec.record.VectorAccessibleComplexWriter;
-import com.dremio.exec.record.VectorContainer;
-import com.dremio.sabot.exec.context.BufferManagerImpl;
 import com.dremio.sabot.exec.context.ContextInformation;
 import com.protegrity.stub.Protector;
 import com.protegrity.stub.SessionObject;
-import org.apache.arrow.memory.BufferAllocator;
-import org.apache.arrow.memory.BufferManager;
+import io.netty.buffer.ArrowBuf;
 import org.apache.arrow.vector.holders.VarCharHolder;
 
-import com.dremio.exec.expr.SimpleFunction;
-import com.dremio.exec.expr.annotations.FunctionTemplate;
-import com.dremio.exec.expr.annotations.FunctionTemplate.NullHandling;
-import com.dremio.exec.expr.annotations.Output;
-import com.dremio.exec.expr.annotations.Param;
-
-import io.netty.buffer.ArrowBuf;
-
-import java.nio.charset.Charset;
-
-import static jdk.nashorn.internal.objects.Global.print;
+import javax.inject.Inject;
 // Dremio Function: protect("<Column Name with unencrypted values>","{Token})
 @FunctionTemplate(
         name = "protect",
@@ -79,11 +67,13 @@ public class Protect implements SimpleFunction {
     public void setup() {
         queryUser = contextInfo.getQueryUser();
         api = Protector.getProtector();
-        session = api.createSession( queryUser);
+        session = api.createSession(queryUser);
         byte[] tokBytes = new byte[token.end];
-        token.buffer.getBytes(0,tokBytes,0, token.end);
+        token.buffer.getBytes(0,tokBytes,0,token.end);
         field_token = new String(tokBytes);
+
     }
+
 
 
 
