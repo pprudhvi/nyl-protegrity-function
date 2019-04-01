@@ -67,7 +67,6 @@ public class UnProtect implements SimpleFunction {
     @Inject
     ContextInformation contextInfo;
     public void setup() {
-        System.out.println("Start Unprotect841");
         queryUser = contextInfo.getQueryUser();
         api = Protector.getProtector();
         session = api.createSession( queryUser);
@@ -81,34 +80,21 @@ public class UnProtect implements SimpleFunction {
 
     @Override
     public void eval() {
-        byte[] valBytes = new byte[(val.end - val.start)];
-/*        String[] unprotectStringArray      = new String[1];
-        byte[][] protectByteArray      = new byte[1][];
-        System.out.println("Eval-Unprotect");
+        String[] unprotectStringArray      = new String[1];
+        byte[][] unprotectByteArray      = new byte[1][];
 
+        int finalLength = val.end - val.start;
 
+        unprotectByteArray[0] = new byte[finalLength];
+        val.buffer.getBytes(val.start, unprotectByteArray[0], 0, finalLength);
 
-        val.buffer.getBytes(val.start,valBytes,0, (val.end-val.start));
-        protectByteArray[0] = new String(valBytes).getBytes();*/
+        api.unprotect(session, field_token, unprotectByteArray, unprotectStringArray);
 
-        final int val_len = val.end - val.start;
-        val.buffer.getBytes(val.start,valBytes,0, val_len);
-        System.out.println("Value = "+new String(valBytes));
-        System.out.println("Len = "+val_len+" end="+val.end);
-        out.buffer = buffer = buffer.reallocIfNeeded(val_len);
+        finalLength = unprotectByteArray[0].length;
+        out.buffer = buffer = buffer.reallocIfNeeded(finalLength);
         out.start = 0;
-        out.end = val_len;
-        System.out.println("A");
-        out.buffer.getBytes(val.start, out.buffer, 0, val_len);
-        val.buffer.clear();
-        System.out.println("B");
-
-/*
-        System.out.println("UNPROTECT value="+protectByteArray[0]);
-        api.unprotect( session, field_token, protectByteArray, unprotectStringArray );
-*/
-//        out.buffer = buffer = buffer.reallocIfNeeded(protectByteArray[0].length);
-//        out.buffer = buffer.setBytes(0, protectByteArray[0],0,protectByteArray[0].length);
+        out.end = finalLength;
+        out.buffer = out.buffer.setBytes(0, unprotectByteArray[0], 0, finalLength);
     }
 
 }

@@ -29,6 +29,8 @@ import io.netty.buffer.ArrowBuf;
 import org.apache.arrow.vector.holders.VarCharHolder;
 
 import javax.inject.Inject;
+import java.nio.ByteBuffer;
+
 // Dremio Function: protect("<Column Name with unencrypted values>","{Token})
 @FunctionTemplate(
         name = "protect",
@@ -82,22 +84,18 @@ public class Protect implements SimpleFunction {
         String[] inputStringArray      = new String[1];
         byte[][] protectByteArray      = new byte[1][];
 
-        final int finalLength = val.end - val.start;
-        System.out.println("TEST: "+finalLength+" start="+val.start+" end="+val.end);
+        int finalLength = val.end - val.start;
 
         byte[] data = new byte[finalLength];
         val.buffer.getBytes(val.start, data, 0, finalLength);
         inputStringArray[0] = new String(data);
 
         api.protect(session, field_token, inputStringArray, protectByteArray);
+        finalLength = protectByteArray[0].length;
         out.buffer = buffer = buffer.reallocIfNeeded(protectByteArray[0].length);
         out.start = 0;
         out.end = finalLength;
-
-        System.out.println("TEST: "+finalLength+" start="+val.start+" end="+val.end);
-        System.out.println("Val = "+new String(data));
-
-        val.buffer.getBytes(val.start, out.buffer, 0, finalLength);
+        out.buffer = out.buffer.setBytes(0, protectByteArray[0], 0, finalLength);
     }
 
 
