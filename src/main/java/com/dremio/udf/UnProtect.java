@@ -67,31 +67,49 @@ public class UnProtect implements SimpleFunction {
     @Inject
     ContextInformation contextInfo;
     public void setup() {
+        System.out.println("Start Unprotect841");
         queryUser = contextInfo.getQueryUser();
         api = Protector.getProtector();
         session = api.createSession( queryUser);
         byte[] tokBytes = new byte[token.end];
         token.buffer.getBytes(0,tokBytes,0, token.end);
         field_token = new String(tokBytes);
+
     }
 
 
 
     @Override
     public void eval() {
-        String[] unprotectStringArray      = new String[1];
+        byte[] valBytes = new byte[(val.end - val.start)];
+/*        String[] unprotectStringArray      = new String[1];
         byte[][] protectByteArray      = new byte[1][];
+        System.out.println("Eval-Unprotect");
 
 
-        byte[] valBytes = new byte[val.end];
-        val.buffer.getBytes(0,valBytes,0, val.end);
-        protectByteArray[0] = new String(valBytes).getBytes();
+
+        val.buffer.getBytes(val.start,valBytes,0, (val.end-val.start));
+        protectByteArray[0] = new String(valBytes).getBytes();*/
+
+        final int val_len = val.end - val.start;
+        val.buffer.getBytes(val.start,valBytes,0, val_len);
+        System.out.println("Value = "+new String(valBytes));
+        System.out.println("Len = "+val_len+" end="+val.end);
+        out.buffer = buffer = buffer.reallocIfNeeded(val_len);
+        out.start = 0;
+        out.end = val_len;
+        System.out.println("A");
+        out.buffer.getBytes(val.start, out.buffer, 0, val_len);
+        val.buffer.clear();
+        System.out.println("B");
+
+/*
+        System.out.println("UNPROTECT value="+protectByteArray[0]);
         api.unprotect( session, field_token, protectByteArray, unprotectStringArray );
-        out.buffer = buffer = buffer.reallocIfNeeded(protectByteArray[0].length);
-        out.buffer = buffer.setBytes(0, protectByteArray[0],0,protectByteArray[0].length);
+*/
+//        out.buffer = buffer = buffer.reallocIfNeeded(protectByteArray[0].length);
+//        out.buffer = buffer.setBytes(0, protectByteArray[0],0,protectByteArray[0].length);
     }
-
-
 
 }
 
