@@ -17,6 +17,7 @@ package com.dremio.udf;
 
 //import com.protegrity.ap.java.*;
 
+import com.dremio.exec.context.AdditionalContext;
 import com.dremio.exec.expr.SimpleFunction;
 import com.dremio.exec.expr.annotations.FunctionTemplate;
 import com.dremio.exec.expr.annotations.FunctionTemplate.NullHandling;
@@ -27,9 +28,14 @@ import com.dremio.sabot.exec.context.ContextInformation;
 import com.protegrity.stub.Protector;
 import com.protegrity.stub.SessionObject;
 import io.netty.buffer.ArrowBuf;
+import io.netty.buffer.PooledByteBufAllocatorL;
+import io.netty.buffer.UnsafeDirectLittleEndian;
+import org.apache.arrow.memory.BaseAllocator;
 import org.apache.arrow.vector.holders.VarCharHolder;
+import org.apache.arrow.vector.ipc.message.ArrowBuffer;
 
 import javax.inject.Inject;
+import java.util.concurrent.atomic.AtomicInteger;
 
 // Dremio Function: unprotect("<Column Name with encrypted values>","{Token})
 @FunctionTemplate(
@@ -64,12 +70,21 @@ public class UnProtect implements SimpleFunction {
     String field_token;
 
 
-    @Inject
+//    @Inject
     ContextInformation contextInfo;
     public void setup() {
+        try {
+            Class.forName("com.protegrity.stub.Protector");
+        } catch(ClassNotFoundException cnf) {
+            cnf.printStackTrace();
+        }
         queryUser = contextInfo.getQueryUser();
-        api = Protector.getProtector();
-        session = api.createSession( queryUser);
+        try {
+            api = Protector.getProtector();
+            session = api.createSession(queryUser);
+        } catch(Exception e){
+            e.printStackTrace();
+        }
         byte[] tokBytes = new byte[token.end];
         token.buffer.getBytes(0,tokBytes,0, token.end);
         field_token = new String(tokBytes);
@@ -96,6 +111,18 @@ public class UnProtect implements SimpleFunction {
         out.end = finalLength;
         out.buffer = out.buffer.setBytes(0, unprotectByteArray[0], 0, finalLength);
     }
+
+// *** CRUDE Testing functions
+    public static void main(String[] args){
+        UnProtect t = new UnProtect();
+        UDF_Test_Framework.setupUnprotectEnv(t);
+        t.setup();
+        t.eval();
+
+
+    }
+
+
 
 }
 

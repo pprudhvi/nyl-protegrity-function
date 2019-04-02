@@ -16,6 +16,7 @@ public class Protector {
         System.out.println("DataElement = "+dataElement);
         System.out.println("Source value="+inputStringArray[0]);
         protectByteArray[0] = ("Protected field-"+inputStringArray[0]).getBytes();
+//        protectByteArray[0] = null;
         System.out.println("Protected value ="+(new String(protectByteArray[0])));
     }
 
@@ -23,5 +24,7 @@ public class Protector {
         System.out.println("### UnProtect User = "+session.queryUser);
         System.out.println("DataElement = "+dataElement);
         unprotectArray[0]="Unprotected string".getBytes();
+        System.out.println("ProtectedString="+(new String(unprotectArray[0])));
+
     }
 }

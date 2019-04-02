@@ -17,6 +17,7 @@ package com.dremio.udf;/*
 
 //import com.protegrity.ap.java.*;
 
+import com.dremio.exec.context.AdditionalContext;
 import com.dremio.exec.expr.SimpleFunction;
 import com.dremio.exec.expr.annotations.FunctionTemplate;
 import com.dremio.exec.expr.annotations.Output;
@@ -26,10 +27,13 @@ import com.dremio.sabot.exec.context.ContextInformation;
 import com.protegrity.stub.Protector;
 import com.protegrity.stub.SessionObject;
 import io.netty.buffer.ArrowBuf;
+import io.netty.buffer.PooledByteBufAllocatorL;
+import io.netty.buffer.UnsafeDirectLittleEndian;
 import org.apache.arrow.vector.holders.VarCharHolder;
 
 import javax.inject.Inject;
 import java.nio.ByteBuffer;
+import java.util.concurrent.atomic.AtomicInteger;
 
 // Dremio Function: protect("<Column Name with unencrypted values>","{Token})
 @FunctionTemplate(
@@ -97,6 +101,18 @@ public class Protect implements SimpleFunction {
         out.end = finalLength;
         out.buffer = out.buffer.setBytes(0, protectByteArray[0], 0, finalLength);
     }
+
+
+    // *** CRUDE Testing functions
+    public static void main(String[] args){
+        Protect t = new Protect();
+        UDF_Test_Framework.setupProtectTestEnv(t);
+        t.setup();
+        t.eval();
+
+    }
+
+
 
 
 
