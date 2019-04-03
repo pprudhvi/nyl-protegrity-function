@@ -17,7 +17,6 @@ package com.dremio.udf;
 
 //import com.protegrity.ap.java.*;
 
-import com.dremio.exec.context.AdditionalContext;
 import com.dremio.exec.expr.SimpleFunction;
 import com.dremio.exec.expr.annotations.FunctionTemplate;
 import com.dremio.exec.expr.annotations.FunctionTemplate.NullHandling;
@@ -25,17 +24,12 @@ import com.dremio.exec.expr.annotations.Output;
 import com.dremio.exec.expr.annotations.Param;
 import com.dremio.exec.expr.annotations.Workspace;
 import com.dremio.sabot.exec.context.ContextInformation;
-import com.protegrity.stub.Protector;
-import com.protegrity.stub.SessionObject;
+import com.protegrity.ab.java.Protector;
+import com.protegrity.ab.java.SessionObject;
 import io.netty.buffer.ArrowBuf;
-import io.netty.buffer.PooledByteBufAllocatorL;
-import io.netty.buffer.UnsafeDirectLittleEndian;
-import org.apache.arrow.memory.BaseAllocator;
 import org.apache.arrow.vector.holders.VarCharHolder;
-import org.apache.arrow.vector.ipc.message.ArrowBuffer;
 
 import javax.inject.Inject;
-import java.util.concurrent.atomic.AtomicInteger;
 
 // Dremio Function: unprotect("<Column Name with encrypted values>","{Token})
 @FunctionTemplate(
@@ -69,31 +63,36 @@ public class UnProtect implements SimpleFunction {
     @Workspace
     String field_token;
 
-
-//    @Inject
+    @Inject
     ContextInformation contextInfo;
-    public void setup() {
-        try {
-            Class.forName("com.protegrity.stub.Protector");
-        } catch(ClassNotFoundException cnf) {
-            cnf.printStackTrace();
-        }
-        queryUser = contextInfo.getQueryUser();
-        try {
-            api = Protector.getProtector();
-            session = api.createSession(queryUser);
-        } catch(Exception e){
-            e.printStackTrace();
-        }
-        byte[] tokBytes = new byte[token.end];
-        token.buffer.getBytes(0,tokBytes,0, token.end);
-        field_token = new String(tokBytes);
 
+    public void setup() {
+        System.out.println("Commencing UnProtect Query");
+        queryUser = contextInfo.getQueryUser();
+
+        api = Protector.getProtector();
+        if(api == null) {
+            System.err.println("Unable to access Protegrity Protector");
+            throw new RuntimeException("Protector.getProtector unable to get an instance");
+        }
+
+        session = api.createSession(queryUser);
+
+        if(session == null){
+            System.err.println("Unable to establish a Protegrity Session using user "+queryUser);
+            throw new RuntimeException("Unable to establish a Protegrity Session using user "+queryUser);
+        }
+
+        byte[] tokBytes = new byte[token.end];
+        if ((token.end - token.start) <=0 || token.buffer == null) {
+            System.err.println("No token found");
+            throw new RuntimeException("No Token Found in protect() function");
+        }
+        token.buffer.getBytes(0,tokBytes,0,token.end);
+        field_token = new String(tokBytes);
     }
 
 
-
-    @Override
     public void eval() {
         String[] unprotectStringArray      = new String[1];
         byte[][] unprotectByteArray      = new byte[1][];
@@ -112,15 +111,6 @@ public class UnProtect implements SimpleFunction {
         out.buffer = out.buffer.setBytes(0, unprotectByteArray[0], 0, finalLength);
     }
 
-// *** CRUDE Testing functions
-    public static void main(String[] args){
-        UnProtect t = new UnProtect();
-        UDF_Test_Framework.setupUnprotectEnv(t);
-        t.setup();
-        t.eval();
-
-
-    }
 
 
 

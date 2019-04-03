@@ -3,46 +3,41 @@ package com.dremio.udf;
 import com.dremio.exec.context.AdditionalContext;
 import com.dremio.sabot.exec.context.ContextInformation;
 import io.netty.buffer.ArrowBuf;
-import io.netty.buffer.PooledByteBufAllocatorL;
-import io.netty.buffer.UnsafeDirectLittleEndian;
+import org.apache.arrow.memory.BufferAllocator;
+import org.apache.arrow.memory.BufferManager;
+import org.apache.arrow.memory.RootAllocator;
 import org.apache.arrow.vector.holders.VarCharHolder;
 
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class UDF_Test_Framework {
-    public static void setupProtectTestEnv(Protect t) {
-        UnsafeDirectLittleEndian emptyUdle = (new PooledByteBufAllocatorL()).allocate(25);
-        t.buffer = new ArrowBuf(new AtomicInteger(), null, emptyUdle, null, null,
-                0, 25, false);
-        t.token = createAndAllocate("ABC");
-        t.val = createAndAllocate("MyFieldValue");
-        t.out = createAndAllocate("");
+    public static void setupProtectTestEnv(Protect t,String unprotectedString, String token) {
+        t.buffer = createArrowBuf(256);
+        t.token = createAndAllocate(token);
+        t.val = createAndAllocate(unprotectedString);
+        t.out = createAndAllocate("                               ");
         t.contextInfo = getContext();
-        System.out.println("Protect Env Setup");
     }
-    public static void setupUnprotectEnv(UnProtect unprot) {
-        UnsafeDirectLittleEndian emptyUdle = (new PooledByteBufAllocatorL()).allocate(35);
-        unprot.buffer = new ArrowBuf(new AtomicInteger(), null, emptyUdle, null, null,
-                0, 25, false);
-        unprot.token = createAndAllocate("ABC");
-        unprot.val = createAndAllocate("MyFieldValue");
+    public static void setupUnprotectEnv(UnProtect unprot, String protectedVal, String token) {
+        unprot.buffer = createArrowBuf(25);
+        unprot.token = createAndAllocate(token);
+        unprot.val = createAndAllocate(protectedVal);
         unprot.out = createAndAllocate("");
         unprot.contextInfo = getContext();
-        System.out.println("Unprotect Env Setup");
     }
 
     public static VarCharHolder createAndAllocate(String val) {
         VarCharHolder t = new VarCharHolder();
-        UnsafeDirectLittleEndian emptyUdle = (new PooledByteBufAllocatorL()).allocate(val.length());
-        emptyUdle.setBytes(0,val.getBytes());
-        t.buffer = new ArrowBuf(new AtomicInteger(), null, emptyUdle, null, null,
-                0, val.length(), false);
+        t.buffer = createArrowBuf(val.length());
+        t.buffer.setBytes(0,val.getBytes(),0,val.length());
         t.start = 0;
         t.end = val.length();
-        System.out.println("T.buffer null"+t.buffer==null);
-        String s = getStringFromArrowBuf(t.buffer);
-        System.out.println(s);
         return t;
+    }
+
+    private static ArrowBuf createArrowBuf(int maxLen) {
+        RootAllocator allocator = new RootAllocator(256);
+        BufferAllocator bm = allocator.newChildAllocator("Child1",0,512);
+        return bm.buffer(maxLen);
     }
 
     public static String getStringFromArrowBuf(ArrowBuf b){

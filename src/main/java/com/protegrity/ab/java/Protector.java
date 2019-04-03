@@ -1,17 +1,17 @@
-package com.protegrity.stub;
+package com.protegrity.ab.java;
 
 
 public class Protector {
-    public static Protector getProtector() {
-        return new Protector();
+    public static com.protegrity.ab.java.Protector getProtector() {
+        return new com.protegrity.ab.java.Protector();
     }
 
-    public com.protegrity.stub.SessionObject createSession(String queryUser) {
-        return new com.protegrity.stub.SessionObject(queryUser);
+    public SessionObject createSession(String queryUser) {
+        return new com.protegrity.ab.java.SessionObject(queryUser);
 
     }
 
-    public void protect(com.protegrity.stub.SessionObject session, String dataElement, String[] inputStringArray, byte[][] protectByteArray ) {
+    public void protect(SessionObject session, String dataElement, String[] inputStringArray, byte[][] protectByteArray ) {
         System.out.println("XXX Protect User = "+session.queryUser);
         System.out.println("DataElement = "+dataElement);
         System.out.println("Source value="+inputStringArray[0]);
@@ -20,7 +20,7 @@ public class Protector {
         System.out.println("Protected value ="+(new String(protectByteArray[0])));
     }
 
-    public void unprotect(com.protegrity.stub.SessionObject session, String dataElement, byte[][] unprotectArray , String[] protectedStringArray) {
+    public void unprotect(SessionObject session, String dataElement, byte[][] unprotectArray , String[] protectedStringArray) {
         System.out.println("### UnProtect User = "+session.queryUser);
         System.out.println("DataElement = "+dataElement);
         unprotectArray[0]="Unprotected string".getBytes();

@@ -1,4 +1,4 @@
-package com.protegrity.stub;
+package com.protegrity.ab.java;
 
 public class ContextInformation {
     public ContextInformation() {

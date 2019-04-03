@@ -14,26 +14,21 @@ package com.dremio.udf;/*
  * limitations under the License.
  */
 
-
-//import com.protegrity.ap.java.*;
-
-import com.dremio.exec.context.AdditionalContext;
 import com.dremio.exec.expr.SimpleFunction;
 import com.dremio.exec.expr.annotations.FunctionTemplate;
 import com.dremio.exec.expr.annotations.Output;
 import com.dremio.exec.expr.annotations.Param;
 import com.dremio.exec.expr.annotations.Workspace;
 import com.dremio.sabot.exec.context.ContextInformation;
-import com.protegrity.stub.Protector;
-import com.protegrity.stub.SessionObject;
+//import com.protegrity.ab.java.Protector;
+import com.protegrity.ab.java.SessionObject;
+import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 import io.netty.buffer.ArrowBuf;
-import io.netty.buffer.PooledByteBufAllocatorL;
-import io.netty.buffer.UnsafeDirectLittleEndian;
+
+
 import org.apache.arrow.vector.holders.VarCharHolder;
 
 import javax.inject.Inject;
-import java.nio.ByteBuffer;
-import java.util.concurrent.atomic.AtomicInteger;
 
 // Dremio Function: protect("<Column Name with unencrypted values>","{Token})
 @FunctionTemplate(
@@ -42,9 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
         nulls = FunctionTemplate.NullHandling.NULL_IF_NULL,
         isDynamic = true)
 public class Protect implements SimpleFunction {
-
-    @Inject
-    ArrowBuf buffer;
+    @Inject ArrowBuf buffer;
 
     @Param
     VarCharHolder val;  //The column value to encrypt
@@ -59,31 +52,44 @@ public class Protect implements SimpleFunction {
     String queryUser;
 
     @Workspace
-    SessionObject session;
+    com.protegrity.ab.java.SessionObject session;
 
     @Workspace
-    Protector api;
+    com.protegrity.ab.java.Protector api;
 
     @Workspace
     String field_token;
 
-
     @Inject
     ContextInformation contextInfo;
+
+
     public void setup() {
+        System.out.println("Commencing UnProtect Query");
         queryUser = contextInfo.getQueryUser();
-        api = Protector.getProtector();
+
+        api = com.protegrity.ab.java.Protector.getProtector();
+        if(api == null) {
+            System.err.println("Unable to access Protegrity Protector");
+            throw new RuntimeException("Protector.getProtector unable to get an instance");
+        }
+
         session = api.createSession(queryUser);
+
+        if(session == null){
+            System.err.println("Unable to establish a Protegrity Session using user "+queryUser);
+            throw new RuntimeException("Unable to establish a Protegrity Session using user "+queryUser);
+        }
+
         byte[] tokBytes = new byte[token.end];
+        if ((token.end - token.start) <=0 || token.buffer == null) {
+            System.err.println("No token found");
+            throw new RuntimeException("No Token Found in protect() function");
+        }
         token.buffer.getBytes(0,tokBytes,0,token.end);
         field_token = new String(tokBytes);
-
     }
 
-
-
-
-    @Override
     public void eval() {
         String[] inputStringArray      = new String[1];
         byte[][] protectByteArray      = new byte[1][];
@@ -101,20 +107,6 @@ public class Protect implements SimpleFunction {
         out.end = finalLength;
         out.buffer = out.buffer.setBytes(0, protectByteArray[0], 0, finalLength);
     }
-
-
-    // *** CRUDE Testing functions
-    public static void main(String[] args){
-        Protect t = new Protect();
-        UDF_Test_Framework.setupProtectTestEnv(t);
-        t.setup();
-        t.eval();
-
-    }
-
-
-
-
 
 }
 
