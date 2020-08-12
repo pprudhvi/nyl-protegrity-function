@@ -21,7 +21,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.dremio.hub</groupId>
   <artifactId>udf-example</artifactId>
-  <version>3.0.6-201812082352540436-1f684f9</version>
+  <version>4.6.1-202007220122450047-62e084d0</version>
   <name>udf-example</name>
   <dependencies>
     <dependency>

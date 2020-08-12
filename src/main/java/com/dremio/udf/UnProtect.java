@@ -15,8 +15,6 @@
  */
 package com.dremio.udf;
 
-//import com.protegrity.ap.java.*;
-
 import com.dremio.exec.expr.SimpleFunction;
 import com.dremio.exec.expr.annotations.FunctionTemplate;
 import com.dremio.exec.expr.annotations.FunctionTemplate.NullHandling;
@@ -24,9 +22,7 @@ import com.dremio.exec.expr.annotations.Output;
 import com.dremio.exec.expr.annotations.Param;
 import com.dremio.exec.expr.annotations.Workspace;
 import com.dremio.sabot.exec.context.ContextInformation;
-import com.protegrity.ab.java.Protector;
-import com.protegrity.ab.java.SessionObject;
-import io.netty.buffer.ArrowBuf;
+import org.apache.arrow.memory.ArrowBuf;
 import org.apache.arrow.vector.holders.VarCharHolder;
 
 import javax.inject.Inject;
@@ -35,8 +31,7 @@ import javax.inject.Inject;
 @FunctionTemplate(
         name = "unprotect",
         scope = FunctionTemplate.FunctionScope.SIMPLE,
-        nulls = NullHandling.NULL_IF_NULL,
-        isDynamic = true)
+        nulls = NullHandling.NULL_IF_NULL)
 public class UnProtect implements SimpleFunction {
 
     @Inject
@@ -55,10 +50,10 @@ public class UnProtect implements SimpleFunction {
     String queryUser;
 
     @Workspace
-    SessionObject session;
+    com.protegrity.ap.java.SessionObject session;
 
     @Workspace
-    Protector api;
+    com.protegrity.ap.java.Protector api;
 
     @Workspace
     String field_token;
@@ -70,7 +65,7 @@ public class UnProtect implements SimpleFunction {
         System.out.println("Commencing UnProtect Query");
         queryUser = contextInfo.getQueryUser();
 
-        api = Protector.getProtector();
+        api = com.protegrity.ap.java.Protector.getProtector();
         if(api == null) {
             System.err.println("Unable to access Protegrity Protector");
             throw new RuntimeException("Protector.getProtector unable to get an instance");
@@ -108,7 +103,7 @@ public class UnProtect implements SimpleFunction {
         out.buffer = buffer = buffer.reallocIfNeeded(finalLength);
         out.start = 0;
         out.end = finalLength;
-        out.buffer = out.buffer.setBytes(0, unprotectByteArray[0], 0, finalLength);
+        out.buffer.setBytes(0, unprotectByteArray[0], 0, finalLength);
     }
 
 

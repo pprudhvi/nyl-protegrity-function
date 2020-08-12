@@ -1,7 +1,7 @@
 package com.dremio.udf;
 
-import com.protegrity.ab.java.*;
-import com.protegrity.ab.java.SessionObject;
+import com.protegrity.ap.java.*;
+import com.protegrity.ap.java.SessionObject;
 import org.apache.arrow.vector.holders.VarCharHolder;
 
 public class BaseProtegrity  {
@@ -9,7 +9,7 @@ public class BaseProtegrity  {
     public  Protector getProtegrityProtector() {
         Protector api;
         try {
-            api = com.protegrity.ab.java.Protector.getProtector();
+            api = com.protegrity.ap.java.Protector.getProtector();
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
@@ -47,6 +47,6 @@ public class BaseProtegrity  {
         out.buffer = out.buffer.reallocIfNeeded(finalLength);
         out.start = 0;
         out.end = finalLength;
-        out.buffer = out.buffer.setBytes(0, protectByteArray[0], 0, finalLength);
+        out.buffer.setBytes(0, protectByteArray[0], 0, finalLength);
     }
 }

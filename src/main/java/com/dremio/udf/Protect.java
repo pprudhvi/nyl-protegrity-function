@@ -20,11 +20,7 @@ import com.dremio.exec.expr.annotations.Output;
 import com.dremio.exec.expr.annotations.Param;
 import com.dremio.exec.expr.annotations.Workspace;
 import com.dremio.sabot.exec.context.ContextInformation;
-//import com.protegrity.ab.java.Protector;
-import com.protegrity.ab.java.SessionObject;
-import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
-import io.netty.buffer.ArrowBuf;
-
+import org.apache.arrow.memory.ArrowBuf;
 
 import org.apache.arrow.vector.holders.VarCharHolder;
 
@@ -34,8 +30,7 @@ import javax.inject.Inject;
 @FunctionTemplate(
         name = "protect",
         scope = FunctionTemplate.FunctionScope.SIMPLE,
-        nulls = FunctionTemplate.NullHandling.NULL_IF_NULL,
-        isDynamic = true)
+        nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
 public class Protect implements SimpleFunction {
     @Inject ArrowBuf buffer;
 
@@ -52,10 +47,10 @@ public class Protect implements SimpleFunction {
     String queryUser;
 
     @Workspace
-    com.protegrity.ab.java.SessionObject session;
+    com.protegrity.ap.java.SessionObject session;
 
     @Workspace
-    com.protegrity.ab.java.Protector api;
+    com.protegrity.ap.java.Protector api;
 
     @Workspace
     String field_token;
@@ -68,7 +63,7 @@ public class Protect implements SimpleFunction {
         System.out.println("Commencing UnProtect Query");
         queryUser = contextInfo.getQueryUser();
 
-        api = com.protegrity.ab.java.Protector.getProtector();
+        api = com.protegrity.ap.java.Protector.getProtector();
         if(api == null) {
             System.err.println("Unable to access Protegrity Protector");
             throw new RuntimeException("Protector.getProtector unable to get an instance");
@@ -105,7 +100,7 @@ public class Protect implements SimpleFunction {
         out.buffer = buffer = buffer.reallocIfNeeded(protectByteArray[0].length);
         out.start = 0;
         out.end = finalLength;
-        out.buffer = out.buffer.setBytes(0, protectByteArray[0], 0, finalLength);
+        out.buffer.setBytes(0, protectByteArray[0], 0, finalLength);
     }
 
 }
